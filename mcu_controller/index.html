@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blues Feather Security Control</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; background-color: #1c1c1e; color: #ffffff; text-align: center; }
+        .card { background: #2c2c2e; padding: 20px; border-radius: 12px; max-width: 400px; margin: 0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        h2 { margin-top: 0; color: #0a84ff; }
+        input[type="text"] { width: 90%; padding: 12px; margin: 15px 0; border: none; border-radius: 8px; font-size: 18px; text-align: center; letter-spacing: 4px; }
+        .btn-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 15px; }
+        button { padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; color: #fff; cursor: pointer; }
+        .btn-disarm { background-color: #30d158; }
+        .btn-owner { background-color: #0a84ff; }
+        .btn-borrower { background-color: #ff9f0a; }
+        .btn-parked { background-color: #ff453a; }
+        #status { margin-top: 15px; font-size: 14px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>🔒 Controller Panel</h2>
+        <p>Enter 2FA Code below and select action:</p>
+        <input type="text" id="totp" placeholder="123456" maxlength="6" inputmode="numeric">
+        
+        <div class="btn-grid">
+            <button class="btn-disarm" onclick="sendRequest('/verify-2fa')">🔑 Disarm 2FA</button>
+            <button class="btn-owner" onclick="sendRequest('/set-mode', 'OWNER')">🔓 Set OWNER Mode</button>
+            <button class="btn-borrower" onclick="sendRequest('/set-mode', 'BORROWER')">🚲 Set BORROWER Mode</button>
+            <button class="btn-parked" onclick="sendRequest('/set-mode', 'PARKED')">🅿️ Set PARKED Mode</button>
+        </div>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        async function sendRequest(endpoint, mode = null) {
+            const code = document.getElementById('totp').value.trim();
+            const statusDiv = document.getElementById('status');
+
+            if (!code || code.length !== 6) {
+                statusDiv.style.color = '#ff453a';
+                statusDiv.innerText = "Please enter a valid 6-digit code.";
+                return;
+            }
+
+            statusDiv.style.color = '#ff9f0a';
+            statusDiv.innerText = "Dispatching command...";
+
+            try {
+                const response = await fetch('/api/dispatch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ endpoint: endpoint, code: code, mode: mode })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    statusDiv.style.color = '#30d158';
+                    statusDiv.innerText = "Success: " + (data.message || JSON.stringify(data));
+                } else {
+                    statusDiv.style.color = '#ff453a';
+                    statusDiv.innerText = "Error: " + (data.message || "Authentication failed");
+                }
+            } catch (err) {
+                statusDiv.style.color = '#ff453a';
+                statusDiv.innerText = "Network Error: " + err.message;
+            }
+        }
+    </script>
+</body>
+</html>
