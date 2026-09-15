@@ -1,72 +1,288 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blues Feather Security Control</title>
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; background-color: #1c1c1e; color: #ffffff; text-align: center; }
-        .card { background: #2c2c2e; padding: 20px; border-radius: 12px; max-width: 400px; margin: 0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        h2 { margin-top: 0; color: #0a84ff; }
-        input[type="text"] { width: 90%; padding: 12px; margin: 15px 0; border: none; border-radius: 8px; font-size: 18px; text-align: center; letter-spacing: 4px; }
-        .btn-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 15px; }
-        button { padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; color: #fff; cursor: pointer; }
-        .btn-disarm { background-color: #30d158; }
-        .btn-owner { background-color: #0a84ff; }
-        .btn-borrower { background-color: #ff9f0a; }
-        .btn-parked { background-color: #ff453a; }
-        #status { margin-top: 15px; font-size: 14px; font-weight: bold; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vehicle Security Control Panel</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: #0f172a;
+      color: #f8fafc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .card {
+      background-color: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 24px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      font-size: 0.875rem;
+      color: #94a3b8;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 8px;
+      background-color: #f59e0b;
+      color: #78350f;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 8px;
+    }
+
+    input[type="password"], input[type="text"] {
+      width: 100%;
+      padding: 14px;
+      border-radius: 8px;
+      border: 1px solid #475569;
+      background-color: #0f172a;
+      color: #ffffff;
+      font-size: 1.25rem;
+      text-align: center;
+      letter-spacing: 0.25em;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus {
+      border-color: #3b82f6;
+    }
+
+    .mode-select {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .mode-btn {
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #475569;
+      background-color: #334155;
+      color: #cbd5e1;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .mode-btn.active {
+      background-color: #2563eb;
+      color: #ffffff;
+      border-color: #3b82f6;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      border-radius: 8px;
+      border: none;
+      background-color: #22c55e;
+      color: #052e16;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .btn-submit:hover {
+      background-color: #16a34a;
+    }
+
+    .btn-submit:disabled {
+      background-color: #475569;
+      color: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    #message {
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      text-align: center;
+      display: none;
+    }
+
+    #message.success {
+      display: block;
+      background-color: #064e3b;
+      color: #a7f3d0;
+      border: 1px solid #047857;
+    }
+
+    #message.error {
+      display: block;
+      background-color: #7f1d1d;
+      color: #fecaca;
+      border: 1px solid #b91c1c;
+    }
+  </style>
 </head>
 <body>
-    <div class="card">
-        <h2>🔒 Controller Panel</h2>
-        <p>Enter 2FA Code below and select action:</p>
-        <input type="text" id="totp" placeholder="123456" maxlength="6" inputmode="numeric">
-        
-        <div class="btn-grid">
-            <button class="btn-disarm" onclick="sendRequest('/verify-2fa')">🔑 Disarm 2FA</button>
-            <button class="btn-owner" onclick="sendRequest('/set-mode', 'OWNER')">🔓 Set OWNER Mode</button>
-            <button class="btn-borrower" onclick="sendRequest('/set-mode', 'BORROWER')">🚲 Set BORROWER Mode</button>
-            <button class="btn-parked" onclick="sendRequest('/set-mode', 'PARKED')">🅿️ Set PARKED Mode</button>
-        </div>
-        <div id="status"></div>
+
+  <div class="card">
+    <div class="header">
+      <h1>🛡️ Security Control Panel</h1>
+      <p>iPhone Control Center (iSH Local Host)</p>
+      <div id="statusBadge" class="status-badge">Awaiting 2FA Entry</div>
     </div>
 
-    <script>
-        async function sendRequest(endpoint, mode = null) {
-            const code = document.getElementById('totp').value.trim();
-            const statusDiv = document.getElementById('status');
+    <form id="2faForm">
+      <div class="form-group">
+        <label for="pinInput">Enter 2FA Security PIN</label>
+        <input 
+          type="password" 
+          id="pinInput" 
+          maxlength="6" 
+          placeholder="••••••" 
+          inputmode="numeric"
+          pattern="[0-9]*"
+          required 
+          autocomplete="off"
+        />
+      </div>
 
-            if (!code || code.length !== 6) {
-                statusDiv.style.color = '#ff453a';
-                statusDiv.innerText = "Please enter a valid 6-digit code.";
-                return;
-            }
+      <label>Select Target System Mode</label>
+      <div class="mode-select">
+        <div class="mode-btn active" id="btnDisarm" onclick="selectMode('DISARMED')">DISARM</div>
+        <div class="mode-btn" id="btnArm" onclick="selectMode('ARMED')">ARM</div>
+      </div>
 
-            statusDiv.style.color = '#ff9f0a';
-            statusDiv.innerText = "Dispatching command...";
+      <button type="submit" id="submitBtn" class="btn-submit">Submit Verification PIN</button>
+    </form>
 
-            try {
-                const response = await fetch('/api/dispatch', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ endpoint: endpoint, code: code, mode: mode })
-                });
+    <div id="message"></div>
+  </div>
 
-                const data = await response.json();
-                if (response.ok) {
-                    statusDiv.style.color = '#30d158';
-                    statusDiv.innerText = "Success: " + (data.message || JSON.stringify(data));
-                } else {
-                    statusDiv.style.color = '#ff453a';
-                    statusDiv.innerText = "Error: " + (data.message || "Authentication failed");
-                }
-            } catch (err) {
-                statusDiv.style.color = '#ff453a';
-                statusDiv.innerText = "Network Error: " + err.message;
-            }
+  <script>
+    // Selected Mode State
+    let selectedMode = 'DISARMED';
+    
+    // Render Server Endpoint URL
+    const RENDER_ENDPOINT = 'https://hsp18msrender.onrender.com/verify-2fa';
+
+    function selectMode(mode) {
+      selectedMode = mode;
+      const btnArm = document.getElementById('btnArm');
+      const btnDisarm = document.getElementById('btnDisarm');
+
+      if (mode === 'ARMED') {
+        btnArm.classList.add('active');
+        btnDisarm.classList.remove('active');
+      } else {
+        btnDisarm.classList.add('active');
+        btnArm.classList.remove('active');
+      }
+    }
+
+    document.getElementById('2faForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const pinInput = document.getElementById('pinInput');
+      const submitBtn = document.getElementById('submitBtn');
+      const messageBox = document.getElementById('message');
+      const statusBadge = document.getElementById('statusBadge');
+
+      const pinValue = pinInput.value.trim();
+
+      if (!pinValue) {
+        showMessage('Please enter a valid PIN code.', 'error');
+        return;
+      }
+
+      // Update UI for pending request
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Transmitting...';
+      messageBox.style.display = 'none';
+
+      try {
+        const response = await fetch(RENDER_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            pin: pinValue,
+            mode: selectedMode
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Server returned HTTP ${response.status}`);
         }
-    </script>
+
+        const data = await response.json();
+        console.log('Success response from Render:', data);
+
+        // Update UI on successful transmission
+        showMessage(`✅ PIN Verified! System set to ${selectedMode}.`, 'success');
+        statusBadge.textContent = `MODE: ${selectedMode}`;
+        statusBadge.style.backgroundColor = selectedMode === 'DISARMED' ? '#10b981' : '#ef4444';
+        statusBadge.style.color = '#ffffff';
+
+        // Clear PIN field
+        pinInput.value = '';
+      } catch (err) {
+        console.error('Submission Error:', err);
+        showMessage('❌ Connection Error: Could not reach Render backend.', 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Verification PIN';
+      }
+    });
+
+    function showMessage(msg, type) {
+      const messageBox = document.getElementById('message');
+      messageBox.textContent = msg;
+      messageBox.className = type;
+    }
+  </script>
 </body>
 </html>
