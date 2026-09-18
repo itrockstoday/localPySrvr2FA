@@ -58,7 +58,7 @@
       text-transform: uppercase;
       letter-spacing: 0.05em;
       margin-top: 10px;
-      background-color: #10b981;
+      background-color: #f59e0b;
       color: #ffffff;
       transition: all 0.3s ease;
     }
@@ -118,7 +118,6 @@
       background-color: #475569;
     }
 
-    /* Full-width styling for the Quick Disarm Button */
     .mode-btn.disarm-full {
       grid-column: span 2;
       background-color: #dc2626;
@@ -215,7 +214,7 @@
     <div class="header">
       <h1>🏍️ Motorcycle Security Panel</h1>
       <p>iPhone Control Center (iSH Host)</p>
-      <div id="statusBadge" class="status-badge">CURRENT MODE: OWNER</div>
+      <div id="statusBadge" class="status-badge">CURRENT MODE: OWNER PARKED</div>
     </div>
 
     <form id="2faForm">
@@ -235,14 +234,11 @@
 
       <label>Select System Operation Mode</label>
       <div class="mode-select">
-        <!-- Dedicated Quick Disarm Button -->
         <div class="mode-btn disarm-full" id="btnDisarm" onclick="selectMode('DISARMED')">🔓 QUICK DISARM SYSTEM</div>
-        
-        <!-- Standard Operational Modes -->
-        <div class="mode-btn active-owner" id="btnOwner" onclick="selectMode('OWNER')">👑 OWNER</div>
+        <div class="mode-btn" id="btnOwner" onclick="selectMode('OWNER')">👑 OWNER</div>
         <div class="mode-btn" id="btnBorrower" onclick="selectMode('BORROWER')">🔑 BORROWER</div>
         <div class="mode-btn" id="btnBorrowerParked" onclick="selectMode('BORROWER_PARKED')">🅿️ BORROWER PARKED</div>
-        <div class="mode-btn" id="btnParked" onclick="selectMode('PARKED')">🚨 OWNER PARKED</div>
+        <div class="mode-btn active-parked" id="btnParked" onclick="selectMode('PARKED')">🚨 OWNER PARKED</div>
       </div>
 
       <button type="submit" id="submitBtn" class="btn-submit">Submit PIN & Change Mode</button>
@@ -252,7 +248,7 @@
   </div>
 
   <script>
-    let selectedMode = 'OWNER';
+    let selectedMode = 'PARKED'; // Default Mode is OWNER PARKED
     const RENDER_ENDPOINT = 'https://hsp18msrender.onrender.com/verify-2fa';
 
     function selectMode(mode) {
@@ -263,14 +259,12 @@
       const btnBorrowerParked = document.getElementById('btnBorrowerParked');
       const btnParked = document.getElementById('btnParked');
 
-      // Reset base button styling
       btnDisarm.className = 'mode-btn disarm-full';
       btnOwner.className = 'mode-btn';
       btnBorrower.className = 'mode-btn';
       btnBorrowerParked.className = 'mode-btn';
       btnParked.className = 'mode-btn';
 
-      // Apply specific active highlight
       if (mode === 'DISARMED') {
         btnDisarm.classList.add('active-disarm');
       } else if (mode === 'OWNER') {
@@ -321,8 +315,10 @@
         }
 
         const data = await response.json();
-        showMessage(`✅ Verified! System mode updated to ${selectedMode}.`, 'success');
-        statusBadge.textContent = `MODE: ${selectedMode}`;
+        const displayMode = selectedMode === 'PARKED' ? 'OWNER PARKED' : selectedMode;
+        
+        showMessage(`✅ Verified! System set to ${displayMode}. GPS: ${data.gps || 'Logged'}`, 'success');
+        statusBadge.textContent = `CURRENT MODE: ${displayMode}`;
         
         if (selectedMode === 'DISARMED') {
           statusBadge.style.backgroundColor = '#ef4444';
